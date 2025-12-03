@@ -1,0 +1,20 @@
+---
+services:
+  authelia:
+    container_name: authelia
+    image: authelia/authelia:4.39.13
+    user: 1000:1000
+    security_opt:
+      - no-new-privileges:true
+    restart: always
+    ports:
+      - 9091:9091
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./:/config
+    environment:
+      - TZ=Europe/Paris
+    networks:
+      - frontend

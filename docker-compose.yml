@@ -1,0 +1,15 @@
+---
+include:
+  - ./redis/docker-compose.yml
+  - ./authelia/docker-compose.yml
+  - ./traefik/docker-compose.yml
+  - ./crowdsec/docker-compose.yml
+
+networks:
+  frontend:
+    name: frontend
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.18.0.0/16
+          gateway: 172.18.0.1

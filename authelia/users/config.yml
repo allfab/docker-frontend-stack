@@ -1,0 +1,15 @@
+---
+###############################################################
+#                         Users Database                      #
+###############################################################
+# docker exec -it authelia authelia crypto hash generate argon2 --password 'password'
+
+users:
+  my_user:
+    disabled: false
+    displayname: "User"
+    password: "$argon2id$v=19$m=65536,t=3,p=create_password_here_from_docker_authelia_cli"
+    email: user@gmail.com
+    groups:
+      - admin
+  

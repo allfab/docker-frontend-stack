@@ -1,0 +1,29 @@
+---
+services:
+  traefik:
+    container_name: traefik
+    image: traefik:latest
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+      - 8080:8080
+    command:
+      - --configFile=/etc/traefik/config.yml
+    depends_on:
+      authelia:
+        condition: service_started
+    volumes:
+      - ./:/etc/traefik
+      - ./logs:/var/log/traefik
+      - ./plugins/crowdsec-bouncer/captcha.html:/captcha.html
+      - ./plugins/crowdsec-bouncer/ban.html:/ban.html
+    environment:
+      - OVH_ENDPOINT=${OVH_ENDPOINT}
+      - OVH_APPLICATION_KEY=${OVH_APPLICATION_KEY}
+      - OVH_APPLICATION_SECRET=${OVH_APPLICATION_SECRET}
+      - OVH_CONSUMER_KEY=${OVH_CONSUMER_KEY}
+      - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}
+      - TZ=Europe/Paris
+    networks:
+      - frontend

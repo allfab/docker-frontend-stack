@@ -1,0 +1,93 @@
+http:
+  middlewares:
+    authelia:
+      forwardAuth:
+        address: http://authelia:9091/api/verify?rd=https://auth.mydomain.com/
+        trustForwardHeader: true
+        authResponseHeaders:
+          - Remote-User
+          - Remote-Groups
+          - Remote-Name
+          - Remote-Email
+
+    crowdsec:
+      plugin:
+        crowdsec-bouncer:
+          enabled: true
+          logLevel: ERROR
+          crowdsecMode: stream
+          updateIntervalSeconds: 60
+          crowdsecLapiScheme: http
+          crowdsecLapiHost: crowdsec:8080
+          crowdsecLapiKey: "from_cscli_bouncers_add_crowdsec_bouncer_traefik_plugin"
+          httpTimeoutSeconds: 10
+          crowdsecAppsecEnabled: true
+          crowdsecAppsecHost: "crowdsec:7422"
+          crowdsecAppsecFailureBlock: true
+          crowdsecAppsecBodyLimit: 10485760
+          redisCacheEnabled: true
+          redisCacheHost: redis:6379
+          redisCachePassword: "env_generated_password"
+          redisCacheDatabase: "5"
+          captchaProvider: hcaptcha
+          captchaHTMLFilePath: /captcha.html
+          banHTMLFilePath: /ban.html
+          clientTrustedIPs:
+            - 192.168.0.254/32
+            # other trusted IPs or networks can be added here
+
+    secure-headers:
+      headers:
+        customResponseHeaders:
+          X-Robots-Tag: "none,noarchive,nosnippet,notranslate,noimageindex"
+          server: ""
+          X-Forwarded-Proto: "https"
+        sslProxyHeaders:
+          X-Forwarded-Proto: https
+        referrerPolicy: "strict-origin-when-cross-origin"
+        hostsProxyHeaders:
+          - "X-Forwarded-Host"
+        customRequestHeaders:
+          X-Forwarded-Proto: "https"
+        contentTypeNosniff: true
+        browserXssFilter: true
+        forceSTSHeader: true
+        stsIncludeSubdomains: true
+        stsSeconds: 63072000
+        stsPreload: true
+
+    https-redirect:
+      redirectScheme:
+        scheme: https
+        permanent: true
+        
+    compression:
+      compress: {}
+
+    buffering:
+      buffering:
+        maxRequestBodyBytes: 10485760      # 10MB max
+        memRequestBodyBytes: 2097152       # 2MB en mémoire
+        maxResponseBodyBytes: 10485760
+        memResponseBodyBytes: 2097152
+
+    rate-limit-standard:
+      rateLimit:
+        average: 10             # 10 req/s (réduit de 100)
+        burst: 20               # 20 req d'un coup max
+        period: 1s
+        sourceCriterion:
+          requestHost: false
+          ipStrategy:
+            depth: 1
+
+    chain-secure:
+      chain:
+        middlewares:
+          - https-redirect
+          - crowdsec
+          # - rate-limit-standard
+          - compression
+          # - buffering
+          - secure-headers
+          - authelia

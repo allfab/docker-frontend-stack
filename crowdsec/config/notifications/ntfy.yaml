@@ -1,0 +1,51 @@
+# /etc/crowdsec/notifications/ntfy.yaml
+
+type: http          # Don't change
+name: ntfy          # Must match the registered plugin in the profile
+
+# One of "trace", "debug", "info", "warn", "error", "off"
+log_level: trace
+
+# group_wait:         # Time to wait collecting alerts before relaying a message to this plugin, eg "30s"
+# group_threshold:    # Amount of alerts that triggers a message before <group_wait> has expired, eg "10"
+# max_retry:          # Number of attempts to relay messages to plugins in case of error
+# timeout:            # Time to wait for response from the plugin before considering the attempt a failure, eg "10s"
+
+#-------------------------
+# plugin-specific options
+
+# The following template receives a list of models.Alert objects
+# The output goes in the http request body
+format: |
+    {{range . -}}
+    {{$alert := . -}}
+    {{range .Decisions -}}
+    L' adresse IP {{.Value}} a été banni pour les {{.Duration}} prochaines heures.    
+    - Type : {{.Type}}
+    - Scénario : {{ .Scenario }}
+    - IP : {{ .Value }}
+    - Informations détaillées sur l'adresse IP : https://app.crowdsec.net/cti/{{.Value}} | https://www.shodan.io/host/{{.Value}}
+    - Pays : {{ $alert.Source.Cn }}
+    - Raison : {{ $alert.Remediation }}
+    {{end -}}
+    {{end -}}
+url: http://10.10.20.50:2080/crowdsec
+
+method: POST
+headers:
+  Content-Type: "text/plain"
+  Authorization: "Bearer from_ntfy_token_here"
+  Title: "🚨 CrowdSec Alert"
+  #Tags: "warning"
+
+# type: ntfy
+# name: my-ntfy
+# config:
+#   url: "https://ntfy.sh/votre-topic"
+#   title: "🚨 CrowdSec Alert!"
+#   message: |
+#     Nouvelle alerte de CrowdSec :
+#     - Scénario : {{ .Scenario }}
+#     - IP : {{ .Source.IP }}
+#     - Pays : {{ .Source.Cn }}
+#     - Raison : {{ .Alert.Remediation }}

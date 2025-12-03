@@ -1,0 +1,39 @@
+---
+# redis.io/docs/latest/operate/oss_and_stack/install/install-stack/
+# https://redis.io/docs/latest/operate/redisinsight/install/install-on-docker/
+services:
+  redis:
+    container_name: redis
+    image: redis:latest
+    security_opt:
+      - no-new-privileges:true
+    restart: always
+    ports:
+      - 6379:6379
+    command: >
+      redis-server
+      --save 60 1
+      --loglevel notice
+      --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - ./data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+    networks:
+      - frontend
+
+  redis-insight:
+    container_name: redis-insight
+    image: redis/redisinsight:latest
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    ports:
+      - 5540:5540
+    volumes:
+      - ./insight:/data
+    networks:
+      - frontend

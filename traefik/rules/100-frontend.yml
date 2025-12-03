@@ -1,0 +1,22 @@
+http:
+  routers:
+    authelia:
+      entryPoints:
+        - websecure
+      rule: Host(`auth.mydomain.com`) || Host(`auth.home.mydomain.com`)
+      service: authelia
+    traefik:
+      entryPoints:
+        - websecure
+      rule: Host(`traefik.mydomain.com`) || Host(`traefik.home.mydomain.com`)
+      service: traefik
+
+  services:
+    authelia:
+      loadBalancer:
+        servers:
+          - url: http://10.99.99.10:9091
+    traefik:
+      loadBalancer:
+        servers:
+          - url: http://10.99.99.10:8080

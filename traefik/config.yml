@@ -1,0 +1,134 @@
+---
+global:
+  checkNewVersion: true
+  sendAnonymousUsage: false
+
+serversTransport:
+  insecureSkipVerify: true
+
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+  websecure:
+    address: ":443"
+    http:
+      tls:
+        certResolver: cloudflare
+        domains:
+          - main: example.com
+            sans:
+              - "*.example.com"
+          - main: home.example.com
+            sans:
+              - "*.home.example.com"
+          - main: dns.example.com
+            sans:
+              - "*.dns.example.com"
+          - main: pve.example.com
+            sans:
+              - "*.pve.example.com"
+          - main: ci.example.com
+            sans: 
+              - "*.ci.example.com"
+          - main: webgis.example.com
+            sans: 
+              - "*.webgis.example.com"
+          - main: storage.example.com
+            sans:
+              - "*.storage.example.com"
+          - main: garage.example.com
+            sans:
+              - "*.garage.example.com"
+          - main: dev.example.com
+            sans:
+              - "*.dev.example.com"
+      middlewares:
+        - chain-secure
+
+providers:
+  file:
+    directory: /etc/traefik/rules
+    watch: true
+
+log:
+  level: error
+  format: common
+  filePath: /var/log/traefik/error.log
+
+accessLog:
+  filePath: /var/log/traefik/access.log
+  format: common
+  fields:
+    defaultMode: keep
+    headers:
+      defaultMode: keep
+
+api:
+  dashboard: true
+  insecure: true
+  debug: false
+
+certificatesResolvers:
+  cloudflare:
+    acme:
+      email: user@gmail.com
+      storage: /etc/traefik/certs/acme-cloudflare.json
+      caServer: "https://acme-v02.api.letsencrypt.org/directory"
+      dnsChallenge:
+        provider: cloudflare
+        propagation:
+          disableChecks: true
+          delayBeforeChecks: 60
+        resolvers:
+          - "1.1.1.1:53"
+          - "1.0.0.1:53"
+  cloudflare-staging:
+    acme:
+      email: user@gmail.com
+      storage: /etc/traefik/certs/acme-cloudflare-staging.json
+      caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
+      dnsChallenge:
+        provider: cloudflare
+        propagation:
+          disableChecks: true
+          delayBeforeChecks: 60
+        resolvers:
+          - "1.1.1.1:53"
+          - "1.0.0.1:53"
+  ovh:
+    acme:
+      email: user@gmail.com
+      storage: /etc/traefik/certs/acme-ovh.json
+      caServer: "https://acme-v02.api.letsencrypt.org/directory"
+      dnsChallenge:
+        provider: ovh
+        propagation:
+          disableChecks: true
+          delayBeforeChecks: 60
+        resolvers:
+          - "1.1.1.1:53"
+          - "1.0.0.1:53"
+  ovh-staging:
+    acme:
+      email: user@gmail.com
+      storage: /etc/traefik/certs/acme-ovh-staging.json
+      caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
+      dnsChallenge:
+        provider: ovh
+        propagation:
+          disableChecks: true
+          delayBeforeChecks: 60
+        resolvers:
+          - "1.1.1.1:53"
+          - "1.0.0.1:53"
+
+experimental:
+  plugins:
+    crowdsec-bouncer:
+      moduleName: "github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin"
+      version: "v1.4.5"

@@ -1,0 +1,27 @@
+---
+services:
+  crowdsec:
+    container_name: crowdsec
+    image: crowdsecurity/crowdsec:latest
+    restart: unless-stopped
+    ports:
+      - 8081:8080
+    depends_on:
+      redis:
+        condition: service_healthy
+      traefik:
+        condition: service_started
+    volumes:
+      - ./config/acquis.yaml:/etc/crowdsec/acquis.yaml:ro
+      - ./config/profiles.yaml:/etc/crowdsec/profiles.yaml:ro
+      - ./config/notifications/ntfy.yaml:/etc/crowdsec/notifications/ntfy.yaml:ro
+      - ./data:/var/lib/crowdsec/data
+      - ../traefik/logs:/var/log/traefik:ro
+      - ../authelia/logs/:/var/log/authelia:ro
+    environment:
+      - GID=${GID-1000}
+      - COLLECTIONS=crowdsecurity/traefik crowdsecurity/http-cve crowdsecurity/base-http-scenarios crowdsecurity/sshd crowdsecurity/linux crowdsecurity/appsec-generic-rules crowdsecurity/appsec-virtual-patching crowdsecurity/appsec-crs LePresidente/authelia
+      - CUSTOM_HOSTNAME=frontend-crowdsec
+      - BOUNCER_KEY_TRAEFIK="${BOUNCER_KEY_TRAEFIK}"
+    networks:
+      - frontend
