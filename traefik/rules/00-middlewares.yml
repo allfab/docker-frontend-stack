@@ -10,6 +10,19 @@ http:
           - Remote-Name
           - Remote-Email
 
+    # Barrière réseau pour le dashboard Traefik (cf. api@internal dans 100-frontend.yml).
+    # À combiner avec Authelia (défense en profondeur) : le dashboard expose la
+    # cartographie complète de l'infra, on filtre donc aussi par IP source.
+    dashboard-ipallow:
+      ipAllowList:
+        sourceRange:
+          - "10.0.0.0/8"          # LAN / VLAN internes
+          # - "x.x.x.x/32"        # IP publique fixe (accès distant : travail, VPN sortant)
+          # Attention hairpin NAT Docker : un client du LAN accédant à l'hôte Traefik
+          # via l'IP publique peut être vu avec l'IP de la gateway du bridge Docker.
+          # Réintroduire l'IP de la gateway (ex. 172.18.0.1/32) et/ou 127.0.0.1/32 si un
+          # accès local (healthcheck, scraping Prometheus) interroge le dashboard.
+
     crowdsec:
       plugin:
         crowdsec-bouncer:

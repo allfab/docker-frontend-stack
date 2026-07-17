@@ -9,14 +9,16 @@ http:
       entryPoints:
         - websecure
       rule: Host(`traefik.mydomain.com`) || Host(`traefik.home.mydomain.com`)
-      service: traefik
+      service: api@internal
+      # Authelia est déjà appliqué via chain-secure au niveau de l'entryPoint websecure.
+      # dashboard-ipallow ajoute une seconde barrière réseau (défense en profondeur) :
+      # le dashboard expose toute la topologie interne, on ne se repose pas sur la seule
+      # couche d'authentification en cas de CVE / contournement Traefik.
+      middlewares:
+        - dashboard-ipallow
 
   services:
     authelia:
       loadBalancer:
         servers:
           - url: http://10.99.99.10:9091
-    traefik:
-      loadBalancer:
-        servers:
-          - url: http://10.99.99.10:8080

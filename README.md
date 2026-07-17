@@ -121,7 +121,8 @@ docker-compose ps
 
 ### Traefik
 
-- Dashboard accessible sur : `https://traefik.mydomain.com`
+- Dashboard accessible sur : `https://traefik.mydomain.com` — servi via le routeur interne `api@internal`, protégé par une double barrière : Authelia (héritée de l'entryPoint `websecure`) **et** le middleware `dashboard-ipallow` (filtrage IP). L'API est en `insecure: false` et le port `8080` n'est **pas** exposé.
+- Adaptez la `sourceRange` du middleware `dashboard-ipallow` (`traefik/rules/00-middlewares.yml`) à vos réseaux avant de déployer.
 - Les certificats Let's Encrypt sont stockés dans `traefik/acme.json`
 
 ### Authelia
